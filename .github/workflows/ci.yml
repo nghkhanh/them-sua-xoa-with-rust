@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push: # build verification for commits landing on main
+    branches:
+      - main
+  pull_request: # build verification for PRs that target main
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      FORCE_COLOR: 1
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run build pipeline # reuses the Dagger build code from the infrastructure crate
+      run: cargo run --release -p infrastructure -- build
