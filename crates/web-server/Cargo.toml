@@ -7,8 +7,11 @@ edition = "2024"
 axum = { version = "0.8", default-features = false, features = ["json", "http1", "tokio", "macros"] }
 axum-extra = { version = "0.10", features = ["form", "typed-routing"] }
 clorinde = { version = "0.0.0", path = "../clorinde" }
+db = { version = "0.1.0", path = "../db" }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "fs"] }
 tokio-util = { version = "0.7", default-features = false, features = ["io"] }
-tower-livereload = "0.9"
-web-pages = { version = "0.1.0", path = "../web-pages" }
+tower-http = "0.6.8"
+validator = { version = "0.15", features = ["derive"] }
+utoipa = { version = "5.3", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "9.0", features = ["axum"] }

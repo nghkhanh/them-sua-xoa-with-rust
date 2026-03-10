@@ -1,6 +1,16 @@
 // This file was generated with `clorinde`. Do not modify.
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug)]
+pub struct CreateUserParams<T1: crate::StringSql, T2: crate::StringSql> {
+    pub email: T1,
+    pub external_id: T2,
+}
+#[derive(Debug)]
+pub struct UpdateUserParams<T1: crate::StringSql> {
+    pub email: T1,
+    pub id: i32,
+}
+#[derive(Debug, Clone, PartialEq)]
 pub struct User {
     pub id: i32,
     pub email: String,
@@ -112,5 +122,114 @@ impl GetUsersStmt {
             },
             mapper: |it| User::from(it),
         }
+    }
+}
+pub struct CreateUserStmt(&'static str, Option<tokio_postgres::Statement>);
+pub fn create_user() -> CreateUserStmt {
+    CreateUserStmt(
+        "INSERT INTO auth.users (email, external_id) VALUES ($1, $2)",
+        None,
+    )
+}
+impl CreateUserStmt {
+    pub async fn prepare<'a, C: GenericClient>(
+        mut self,
+        client: &'a C,
+    ) -> Result<Self, tokio_postgres::Error> {
+        self.1 = Some(client.prepare(self.0).await?);
+        Ok(self)
+    }
+    pub async fn bind<'c, 'a, 's, C: GenericClient, T1: crate::StringSql, T2: crate::StringSql>(
+        &'s self,
+        client: &'c C,
+        email: &'a T1,
+        external_id: &'a T2,
+    ) -> Result<u64, tokio_postgres::Error> {
+        client.execute(self.0, &[email, external_id]).await
+    }
+}
+impl<'a, C: GenericClient + Send + Sync, T1: crate::StringSql, T2: crate::StringSql>
+    crate::client::async_::Params<
+        'a,
+        'a,
+        'a,
+        CreateUserParams<T1, T2>,
+        std::pin::Pin<
+            Box<dyn futures::Future<Output = Result<u64, tokio_postgres::Error>> + Send + 'a>,
+        >,
+        C,
+    > for CreateUserStmt
+{
+    fn params(
+        &'a self,
+        client: &'a C,
+        params: &'a CreateUserParams<T1, T2>,
+    ) -> std::pin::Pin<
+        Box<dyn futures::Future<Output = Result<u64, tokio_postgres::Error>> + Send + 'a>,
+    > {
+        Box::pin(self.bind(client, &params.email, &params.external_id))
+    }
+}
+pub struct UpdateUserStmt(&'static str, Option<tokio_postgres::Statement>);
+pub fn update_user() -> UpdateUserStmt {
+    UpdateUserStmt("UPDATE auth.users SET email = $1 WHERE id = $2", None)
+}
+impl UpdateUserStmt {
+    pub async fn prepare<'a, C: GenericClient>(
+        mut self,
+        client: &'a C,
+    ) -> Result<Self, tokio_postgres::Error> {
+        self.1 = Some(client.prepare(self.0).await?);
+        Ok(self)
+    }
+    pub async fn bind<'c, 'a, 's, C: GenericClient, T1: crate::StringSql>(
+        &'s self,
+        client: &'c C,
+        email: &'a T1,
+        id: &'a i32,
+    ) -> Result<u64, tokio_postgres::Error> {
+        client.execute(self.0, &[email, id]).await
+    }
+}
+impl<'a, C: GenericClient + Send + Sync, T1: crate::StringSql>
+    crate::client::async_::Params<
+        'a,
+        'a,
+        'a,
+        UpdateUserParams<T1>,
+        std::pin::Pin<
+            Box<dyn futures::Future<Output = Result<u64, tokio_postgres::Error>> + Send + 'a>,
+        >,
+        C,
+    > for UpdateUserStmt
+{
+    fn params(
+        &'a self,
+        client: &'a C,
+        params: &'a UpdateUserParams<T1>,
+    ) -> std::pin::Pin<
+        Box<dyn futures::Future<Output = Result<u64, tokio_postgres::Error>> + Send + 'a>,
+    > {
+        Box::pin(self.bind(client, &params.email, &params.id))
+    }
+}
+pub struct DeleteUserStmt(&'static str, Option<tokio_postgres::Statement>);
+pub fn delete_user() -> DeleteUserStmt {
+    DeleteUserStmt("DELETE FROM auth.users WHERE id = $1", None)
+}
+impl DeleteUserStmt {
+    pub async fn prepare<'a, C: GenericClient>(
+        mut self,
+        client: &'a C,
+    ) -> Result<Self, tokio_postgres::Error> {
+        self.1 = Some(client.prepare(self.0).await?);
+        Ok(self)
+    }
+    pub async fn bind<'c, 'a, 's, C: GenericClient>(
+        &'s self,
+        client: &'c C,
+        id: &'a i32,
+    ) -> Result<u64, tokio_postgres::Error> {
+        client.execute(self.0, &[id]).await
     }
 }
