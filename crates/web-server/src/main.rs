@@ -13,6 +13,8 @@ use clorinde::queries::users::{
 };
 use serde::Deserialize;
 use std::sync::Arc;
+use utoipa::{OpenApi, ToSchema};
+use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(Clone)]
 struct AppState {
@@ -33,6 +35,23 @@ impl<E: std::fmt::Display> From<E> for AppError {
     }
 }
 
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        list_users,
+        add_user,
+        edit_user,
+        remove_user,
+    ),
+    components(
+        schemas(UserResponse, CreateUserPayload, UpdateUserPayload)
+    ),
+    tags(
+        (name = "users", description = "User management API")
+    )
+)]
+struct ApiDoc;
+
 #[tokio::main]
 async fn main() {
     let config = config::Config::new();
@@ -42,6 +61,7 @@ async fn main() {
     };
 
     let app = Router::new()
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .route("/", get(health_check))
         .route("/users", get(list_users))
         .route("/users", post(add_user))
@@ -58,12 +78,19 @@ async fn health_check() -> impl IntoResponse {
     "Hello from the server!"
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ToSchema)]
 struct UserResponse {
     id: i32,
     email: String,
 }
 
+#[utoipa::path(
+    get,
+    path = "/users",
+    responses(
+        (status = 200, description = "List all users", body = [UserResponse])
+    )
+)]
 #[axum::debug_handler]
 async fn list_users(State(state): State<AppState>) -> Result<Json<Vec<UserResponse>>, AppError> {
     let client = state.pool.get().await?;
@@ -81,12 +108,20 @@ async fn list_users(State(state): State<AppState>) -> Result<Json<Vec<UserRespon
     Ok(Json(response))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct CreateUserPayload {
     email: String,
     external_id: String,
 }
 
+#[utoipa::path(
+    post,
+    path = "/users",
+    request_body = CreateUserPayload,
+    responses(
+        (status = 201, description = "User created successfully")
+    )
+)]
 #[axum::debug_handler]
 async fn add_user(
     State(state): State<AppState>,
@@ -101,11 +136,22 @@ async fn add_user(
     Ok(StatusCode::CREATED)
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct UpdateUserPayload {
     email: String,
 }
 
+#[utoipa::path(
+    put,
+    path = "/users/{id}",
+    request_body = UpdateUserPayload,
+    params(
+        ("id" = i32, Path, description = "User database id to update")
+    ),
+    responses(
+        (status = 200, description = "User updated successfully")
+    )
+)]
 #[axum::debug_handler]
 async fn edit_user(
     State(state): State<AppState>,
@@ -121,6 +167,16 @@ async fn edit_user(
     Ok(StatusCode::OK)
 }
 
+#[utoipa::path(
+    delete,
+    path = "/users/{id}",
+    params(
+        ("id" = i32, Path, description = "User database id to delete")
+    ),
+    responses(
+        (status = 204, description = "User deleted successfully")
+    )
+)]
 #[axum::debug_handler]
 async fn remove_user(
     State(state): State<AppState>,
