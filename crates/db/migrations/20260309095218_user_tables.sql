@@ -17,7 +17,7 @@ INSERT INTO auth.users(external_id, email, first_name, last_name) VALUES
   ('auth0|user-3', 'test3@test1.com', 'Test3', 'User');
 
 GRANT USAGE ON SCHEMA auth TO application_user;
-GRANT SELECT ON auth.users, auth.users_id_seq TO application_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON auth.users, auth.users_id_seq TO application_user;
 
 -- migrate:down
 DROP TABLE IF EXISTS auth.users;
