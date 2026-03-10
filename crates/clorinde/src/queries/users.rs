@@ -1,6 +1,6 @@
 // This file was generated with `clorinde`. Do not modify.
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct User {
     pub id: i32,
     pub email: String,
