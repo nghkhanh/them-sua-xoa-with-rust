@@ -1,16 +1,14 @@
 mod config;
 
 use axum::{
+    Json, Router,
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
     routing::{delete, get, post, put},
-    Json, Router,
 };
 use clorinde::deadpool_postgres::Pool;
-use clorinde::queries::users::{
-    create_user, delete_user, get_users, update_user,
-};
+use clorinde::queries::users::{create_user, delete_user, get_users, update_user};
 use serde::Deserialize;
 use std::sync::Arc;
 use utoipa::{OpenApi, ToSchema};
@@ -94,16 +92,16 @@ struct UserResponse {
 #[axum::debug_handler]
 async fn list_users(State(state): State<AppState>) -> Result<Json<Vec<UserResponse>>, AppError> {
     let client = state.pool.get().await?;
-    
-    let users = get_users()
-        .bind(&client)
-        .all()
-        .await?;
 
-    let response = users.into_iter().map(|u| UserResponse {
-        id: u.id,
-        email: u.email
-    }).collect();
+    let users = get_users().bind(&client).all().await?;
+
+    let response = users
+        .into_iter()
+        .map(|u| UserResponse {
+            id: u.id,
+            email: u.email,
+        })
+        .collect();
 
     Ok(Json(response))
 }
@@ -128,7 +126,7 @@ async fn add_user(
     Json(payload): Json<CreateUserPayload>,
 ) -> Result<StatusCode, AppError> {
     let client = state.pool.get().await?;
-    
+
     create_user()
         .bind(&client, &payload.email, &payload.external_id)
         .await?;
@@ -159,10 +157,8 @@ async fn edit_user(
     Json(payload): Json<UpdateUserPayload>,
 ) -> Result<StatusCode, AppError> {
     let client = state.pool.get().await?;
-    
-    update_user()
-        .bind(&client, &payload.email, &id)
-        .await?;
+
+    update_user().bind(&client, &payload.email, &id).await?;
 
     Ok(StatusCode::OK)
 }
@@ -183,10 +179,8 @@ async fn remove_user(
     Path(id): Path<i32>,
 ) -> Result<StatusCode, AppError> {
     let client = state.pool.get().await?;
-    
-    delete_user()
-        .bind(&client, &id)
-        .await?;
+
+    delete_user().bind(&client, &id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

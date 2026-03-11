@@ -1,14 +1,14 @@
 --: User()
 
 --! get_users : User
-SELECT 
-    id, 
+SELECT
+    id,
     email
 FROM auth.users;
 
 -- 👇 add `create_user` query
 --! create_user
-INSERT INTO 
+INSERT INTO
     auth.users (email, external_id)
 VALUES
     (:email, :external_id);

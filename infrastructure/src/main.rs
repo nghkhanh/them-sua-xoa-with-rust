@@ -59,13 +59,13 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn run_build(
     client: &Query,
     database_url: &str,
     migrations_tag: Option<&str>,
     web_tag: Option<&str>,
 ) -> Result<()> {
-
     let workspace = client.host().directory_opts(
         ".",
         HostDirectoryOptsBuilder::default()
