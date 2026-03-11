@@ -1,112 +1,105 @@
 <div align="center">
   <h1>🦀 Modern Rust Microservice Template</h1>
   <p>
-    <strong>A high-performance, type-safe, and production-ready Web API built with <a href="https://github.com/tokio-rs/axum">Axum</a>.</strong>
+    <strong>High-performance, type-safe Web API built with <a href="https://github.com/tokio-rs/axum">Axum</a>.</strong>
   </p>
   <p>
-    <img src="https://img.shields.io/badge/Rust-1.74+-orange.svg?style=flat-square" alt="Rust Version" />
-    <img src="https://img.shields.io/badge/Axum-0.8-blue.svg?style=flat-square" alt="Axum Version" />
-    <img src="https://img.shields.io/badge/PostgreSQL-15%2B-336791.svg?style=flat-square&logo=postgresql" alt="PostgreSQL" />
-    <img src="https://img.shields.io/badge/CI%2FCD-Dagger-yellow.svg?style=flat-square" alt="Dagger CI" />
+    <img src="https://img.shields.io/badge/Rust-1.74+-orange.svg?style=flat-square" />
+    <img src="https://img.shields.io/badge/Axum-0.8-blue.svg?style=flat-square" />
+    <img src="https://img.shields.io/badge/PostgreSQL-15%2B-336791.svg?style=flat-square&logo=postgresql" />
+    <img src="https://img.shields.io/badge/CI%2FCD-Dagger-yellow.svg?style=flat-square" />
   </p>
 </div>
 
-<hr />
+---
 
-## 📖 Overview
+## Tech Stack
 
-Dự án này là một bộ khung hiện đại, dành cho việc xây dựng các ứng dụng Backend/Microservice hiệu suất cao bằng Rust.
-Kiến trúc dự án hướng đến **Sự An Toàn Kiểu Dữ Liệu (Type Safety)** từ tầng lõi đến tận Database, kết hợp cùng tự động hoá CI/CD và tài liệu OpenAPI 100%.
-
-### ✨ Core Features & Tech Stack
-
-- 🚀 **Routing & HTTP Server:** `axum` (được bảo trợ bởi Tokio) - cực nhanh, ổn định.
-- 🐘 **Database Connectivity:** Mô hình truy vấn SQL-first thông qua thư viện `clorinde`. Đảm bảo sinh code Rust chặt chẽ 1:1 từ file `.sql` gốc để tận dụng tối ưu sức mạnh của PostgreSQL.
-- 📖 **API Documentation:** Tự động phát sinh OpenAPI Specs + Swagger UI từ comments và structs thông qua `utoipa`.
-- 🛠️ **DevOps & CI/CD:**
-  - Triển khai "Infrastructure as Code" ở thư mục `infrastructure/` bằng Rust qua framework **Dagger SDK**.
-  - Tự động thay đổi lược đồ database bằng tool độc lập **dbmate**.
-- 🛡️ **Code Quality:** Phên dậu **Pre-commit hooks** giúp format, xót lỗi qua `cargo fmt` và `cargo clippy` ở từng điểm chạm commit, đảm bảo kho code sạch sẽ tối đa.
-- ⚙️ **Developer Experience (DX):** Thay thế các file bash scripts phức tạp bằng công cụ **Justfile**, tối giản chu trình khởi chạy.
+| Thành phần | Công cụ | Vai trò |
+| :--- | :--- | :--- |
+| HTTP Server | `axum` + `tokio` | Routing, middleware, async runtime |
+| Database | `clorinde` + `deadpool-postgres` | SQL-first, sinh Rust code từ file `.sql` |
+| API Docs | `utoipa` | Tự động sinh OpenAPI Spec + Swagger UI |
+| Migration | `dbmate` | Tạo/sửa schema database |
+| CI/CD | Dagger SDK (Rust) | Build pipeline viết bằng Rust |
+| Code Quality | `pre-commit` + `cargo fmt` + `cargo clippy` | Tự động format và lint trước mỗi commit |
+| Task Runner | `just` | Lệnh tắt thay thế `make` |
 
 ---
 
-## 🏗️ Project Architecture (Workspace)
+## Cấu trúc thư mục
 
-Dự án phân rã logic hoạt động qua một `Cargo Workspace` gồm nhiều crates (module) chuyên biệt:
-
-```plaintext
-modern-rust/
+```
+.
 ├── crates/
-│   ├── web-server/     # (Crate chính) Entry point, chứa Middleware, API Routing (Axum), OpenAPI Swagger.
-│   ├── db/             # Kết nối Database (Pool, Transaction) sử dụng `deadpool-postgres` & chứa files `.sql`.
-│   └── clorinde/       # (Auto-generated Crate) Tự động sinh mã logic Rust dựa trên các tệp `.sql` từ crate `db`.
-│
-├── infrastructure/     # (DevOps Crate) Chạy Pipelines Build/Test/Deploy cục bộ hoặc trên Cloud dùng Dagger SDK.
-├── Tech-Stack.md       # Bảng phân tích chi tiết Tech Stack giữa Rust và Python.
-├── .pre-commit-config  # Lưới chắn ngăn lỗi syntax trước khi đẩy code lên Git.
-└── Justfile            # Các câu lệnh command runner hàng ngày.
+│   ├── web-server/     # Entry point — routing, middleware, handlers, Swagger UI
+│   ├── db/             # Kết nối DB (pool) + file migration + file SQL query
+│   └── clorinde/       # ⚠️ Auto-generated — KHÔNG sửa tay
+├── infrastructure/     # Dagger CI pipeline (Rust)
+├── Justfile            # Lệnh tắt hàng ngày
+├── .pre-commit-config  # Git hooks tự động format/lint
+└── .env                # Database URL (không commit)
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 1. Prerequisites (Yêu cầu Môi trường)
-
-Đảm bảo bạn đã cài đặt đủ dàn công cụ sau:
-- [Rust & Cargo](https://rustup.rs/) (Phiên bản Stable Mới Nhất)
-- [Docker](https://www.docker.com/) hoặc colima để chạy Container
-- [Just](https://github.com/casey/just) (Trình gọi lệnh thay thế `make`)
-- [dbmate](https://github.com/amacneil/dbmate) (Để khởi chạy tính năng di trú lược đồ CSDL)
-- [Pre-commit](https://pre-commit.com/) (Khoá chặt lỗi syntax cục bộ qua Git hook)
-
-### 2. Initialization & Setup
-
-Lần đầu clone dự án, hãy thiết lập khóa chặn pre-commit để tự động format code của bạn ngay khi gõ lệnh `git commit`:
+**1. Cài pre-commit hook** (chạy một lần sau khi clone):
 ```bash
 pre-commit install
 ```
 
-### 3. Database Bootstrap
-
-Khởi chạy cơ sở dữ liệu và cấy các bảng dữ liệu gốc bằng `dbmate` (Thông qua Just):
+**2. Thiết lập database:**
 ```bash
-# Lệnh 'dbmate up' sẽ tự động chèn database url thông qua config `.env` của thư mục hiện hành
-dbmate up
+just dev-init      # Tạo cụm Kubernetes local (k3d)
+just dev-setup     # Khởi động PostgreSQL trong K8S
+just dev-secrets   # Tạo file .env với database credentials
+dbmate up          # Chạy migration, tạo bảng
 ```
 
-### 4. Run Development Server
-
-Việc duy nhất bạn cần làm mỗi sáng thức dậy:
+**3. Chạy server:**
 ```bash
 just watch
 ```
-*(Lệnh này sử dụng `cargo watch` để hot-reload lại Web Server - port mặc định: 3000 - bất cứ khi nào bạn nhấn nút Save trên file mã nguồn).*
+Server khởi động tại `http://localhost:3000`. Tự động reload khi sửa code.
 
 ---
 
-## 📚 API Reference (Swagger UI)
+## API Documentation
 
-Tài liệu tương tác với Backend tự động được sinh ra và cung cấp ở cấp độ trực quan nhất. Ngay sau khi server báo log màu xanh, hãy mở trình duyệt và trải nghiệm:
+Swagger UI tại: **[http://localhost:3000/swagger-ui/](http://localhost:3000/swagger-ui/)**
 
-👉 **[http://localhost:3000/swagger-ui/](http://localhost:3000/swagger-ui/)**
-
-Cung cấp sẵn bộ cắm `Users` (CRUD đầy đủ: Tạo mới, Lấy danh sách, Chỉnh sửa, và Xóa theo UUID).
+Endpoints hiện có: `Users` CRUD đầy đủ (GET / POST / PUT / DELETE).
 
 ---
 
-## 💻 Development Workflow
+## Thêm feature mới (SQL-First workflow)
 
-**Cách thêm tính năng (API) mới truy vấn dữ liệu theo hệ tư tưởng SQL-First:**
+```
+1. Viết SQL query    →  crates/db/queries/<tên>.sql
+2. Sinh Rust code    →  clorinde live -q ./crates/db/queries/ -d crates/clorinde
+3. Dùng trong API    →  import từ clorinde::queries::<tên> trong web-server
+```
 
-1. Tạo một hàm hoặc câu lệnh viết bằng ngôn ngữ `SQL` thuần túy vào tệp con phù hợp trong thu mục `crates/db/queries/`.
-2. Gọi công cụ `clorinde` tự phân tích (parse) cú pháp PostgreSQL đó thành Struct tĩnh trong Rust (`crates/clorinde`):
-   ```bash
-   clorinde live -q ./crates/db/queries/ -d crates/clorinde "<YOUR_DATABASE_URL>"
-   ```
-3. Lúc này, tại file Handler của `crates/web-server`, bạn chỉ việc Import hàm vừa được `clorinde` sinh ra, "bind" với Database Client đang chạy ngầm, và hứng kết quả đã được map kiểu vô cùng an toàn (Type-checked at compile time).
+Nếu cần thêm bảng mới, tạo migration trước:
+```bash
+dbmate new <tên_migration>   # tạo file SQL
+dbmate up                    # chạy migration
+```
 
 ---
 
-_Được duy trì và phát triển với tốc độ và sự bảo mật tối đa của Rust._ 🦀
+## CI/CD
+
+GitHub Actions tự động chạy khi push lên `main` hoặc tạo PR:
+```bash
+cargo run --release -p infrastructure -- build
+```
+
+Pipeline thực hiện theo thứ tự: migration → sinh clorinde code → compile → build Docker image.
+
+Build thủ công local:
+```bash
+cargo run -p infrastructure -- build --web-tag docker-daemon:local/web:latest
+```
